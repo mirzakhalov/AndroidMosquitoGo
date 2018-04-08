@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         applicationId 'com.google.android.cameraview.demo'
-        minSdkVersion rootProject.ext.minSdkVersion
+        minSdkVersion 11
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName '1.0'
@@ -49,4 +49,5 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2') {
         exclude module: 'support-annotations'
     }
+
 }
