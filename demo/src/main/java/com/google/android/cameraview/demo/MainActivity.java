@@ -24,6 +24,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.graphics.Matrix;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -50,6 +51,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -68,6 +70,11 @@ public class MainActivity extends AppCompatActivity implements
 
     private TextView latitudeV;
     private TextView longitudeV;
+    private TextView distanceV;
+    private ImageView arrow;
+    private ImageView tire;
+    double arrowRotationAngle;
+    double distance;
     private static final String TAG = "MainActivity";
 
     private static final int REQUEST_CAMERA_PERMISSION = 1;
@@ -83,8 +90,14 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         latitudeV = (TextView) findViewById(R.id.latitude);
         longitudeV = (TextView) findViewById(R.id.longitude);
+        distanceV = (TextView) findViewById(R.id.distance);
+        arrow = (ImageView) findViewById(R.id.arrow);
+        tire = (ImageView) findViewById(R.id.tire);
+
+
         LocationManager locationManager = (LocationManager)
                 getSystemService(Context.LOCATION_SERVICE);
 
@@ -106,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements
 
         mCameraView = (CameraView) findViewById(R.id.camera);
         mCameraView.start();
+
 
     }
 
@@ -179,18 +193,6 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    private Handler getBackgroundHandler() {
-        if (mBackgroundHandler == null) {
-            HandlerThread thread = new HandlerThread("background");
-            thread.start();
-            mBackgroundHandler = new Handler(thread.getLooper());
-        }
-        return mBackgroundHandler;
-    }
-
-
-
-
     public static class ConfirmationDialogFragment extends DialogFragment {
 
         private static final String ARG_MESSAGE = "message";
@@ -240,7 +242,10 @@ public class MainActivity extends AppCompatActivity implements
                     .create();
         }
 
+
+
     }
+
 
     private class MyLocationListener implements LocationListener {
 
@@ -249,34 +254,31 @@ public class MainActivity extends AppCompatActivity implements
             latitudeV.setText("");
             longitudeV.setText("");
 
+            /*********
+             * Uncomment if you want the app to toast every location change
             Toast.makeText(
                     getBaseContext(),
                     "Location changed: Lat: " + loc.getLatitude() + " Lng: "
                             + loc.getLongitude(), Toast.LENGTH_SHORT).show();
+            *********/
             String longitude = "Longitude: " + loc.getLongitude();
             Log.v(TAG, longitude);
             String latitude = "Latitude: " + loc.getLatitude();
             Log.v(TAG, latitude);
 
-        /*------- To get city name from coordinates -------- */
-            String cityName = null;
-            /*Geocoder gcd = new Geocoder(getBaseContext(), Locale.getDefault());
-            List<Address> addresses;
-            try {
-                addresses = gcd.getFromLocation(loc.getLatitude(),
-                        loc.getLongitude(), 1);
-                if (addresses.size() > 0) {
-                    System.out.println(addresses.get(0).getLocality());
-                    cityName = addresses.get(0).getLocality();
-                }
+            // set the current location global so calculations can be made
+            ObjectBehavior.currentLoc = loc;
+            // should enclose by try/catch
+            distance = (int)ObjectBehavior.CalculateDistance();
+            distanceV.setText("Distance: " + String.valueOf(distance) + " feet");
+            arrowRotationAngle = ObjectBehavior.CalculateRotation();
+            arrow.setRotation(270+(int)(arrowRotationAngle));
+            if(distance < 500){
+               tire.setVisibility(View.VISIBLE);
             }
-            catch (IOException e) {
-                e.printStackTrace();
+            else {
+                tire.setVisibility(View.INVISIBLE);
             }
-
-            String s = longitude + "\n" + latitude + "\n\nMy Current City is: "
-                    + cityName;
-        */
             latitudeV.setText(latitude);
             longitudeV.setText(longitude);
         }
@@ -289,6 +291,7 @@ public class MainActivity extends AppCompatActivity implements
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {}
+
     }
 
 }

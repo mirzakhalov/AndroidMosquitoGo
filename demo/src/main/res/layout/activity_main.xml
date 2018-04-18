@@ -22,7 +22,23 @@
     tools:context=".MainActivity">
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/tire"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:layout_alignParentLeft="false"
+        android:layout_alignParentStart="false"
+        android:layout_alignParentTop="false"
+        android:layout_alignTop="@+id/arrow"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="60dp"
+        android:elevation="24dp"
+        app:srcCompat="@drawable/tire"/>
+
+    <ImageView
+        android:id="@+id/arrow"
         android:layout_width="75dp"
         android:layout_height="50dp"
         android:layout_alignParentRight="true"
@@ -36,31 +52,43 @@
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Button"/>
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:background="@android:color/holo_red_light"
+        android:text="GoMo!"
+        android:textColor="@android:color/white"
+        android:textColorHighlight="@color/accent"
+        android:textStyle="bold"/>
 
     <TextView
         android:id="@+id/latitude"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="20dp"
 
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="40dp"
-        android:layout_marginLeft="100dp"
-        android:layout_marginTop="480dp"
+        android:layout_above="@+id/distance"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="44dp"
+        android:layout_marginStart="44dp"
+        android:background="@color/primaryDark"
         android:elevation="24dp"
-        android:text="TextView"/>
+        android:text="TextView"
+        android:textColor="@android:color/background_light"/>
 
     <TextView
         android:id="@+id/longitude"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="20dp"
 
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="40dp"
-        android:layout_marginLeft="220dp"
-        android:layout_marginTop="480dp"
+        android:layout_above="@+id/distance"
+        android:layout_alignEnd="@+id/arrow"
+        android:layout_alignRight="@+id/arrow"
+        android:layout_marginEnd="34dp"
+        android:layout_marginRight="34dp"
+        android:background="@color/primaryDark"
         android:elevation="24dp"
-        android:text="TextView"/>
+        android:text="TextView"
+        android:textColor="@android:color/background_light"/>
 
     <TextView
         android:id="@+id/distance"
@@ -71,8 +99,10 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="15dp"
         android:layout_marginTop="11dp"
+        android:background="@android:color/background_light"
         android:elevation="24dp"
-        android:text="TextView"/>
+        android:text="TextView"
+        android:textColor="@color/accent"/>
 
     <com.google.android.cameraview.CameraView
         android:id="@+id/camera"
