@@ -51,12 +51,18 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.cameraview.AspectRatio;
 import com.google.android.cameraview.CameraView;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Set;
 
 
@@ -73,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements
     private TextView distanceV;
     private ImageView arrow;
     private ImageView tire;
+    private Button mogo; // stands for mosquitoGo
     double arrowRotationAngle;
     double distance;
     private static final String TAG = "MainActivity";
@@ -96,8 +103,11 @@ public class MainActivity extends AppCompatActivity implements
         distanceV = (TextView) findViewById(R.id.distance);
         arrow = (ImageView) findViewById(R.id.arrow);
         tire = (ImageView) findViewById(R.id.tire);
+        mogo = (Button) findViewById(R.id.mogo);
 
-
+        if (mogo != null) {
+            mogo.setOnClickListener(mOnClickListener);
+        }
         LocationManager locationManager = (LocationManager)
                 getSystemService(Context.LOCATION_SERVICE);
 
@@ -118,10 +128,26 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         mCameraView = (CameraView) findViewById(R.id.camera);
+        if (mCameraView != null) {
+            mCameraView.addCallback(mCallback);
+        }
         mCameraView.start();
 
 
     }
+
+    private View.OnClickListener mOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.mogo:
+                    if (mCameraView != null) {
+                        mCameraView.takePicture();
+                    }
+                    break;
+            }
+        }
+    };
 
     @Override
     protected void onResume() {
@@ -193,6 +219,63 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    private CameraView.Callback mCallback
+            = new CameraView.Callback() {
+
+        @Override
+        public void onCameraOpened(CameraView cameraView) {
+            Log.d(TAG, "onCameraOpened");
+        }
+
+        @Override
+        public void onCameraClosed(CameraView cameraView) {
+            Log.d(TAG, "onCameraClosed");
+        }
+
+        @Override
+        public void onPictureTaken(CameraView cameraView, final byte[] data) {
+            Log.d(TAG, "onPictureTaken " + data.length);
+
+            getBackgroundHandler().post(new Runnable() {
+                @Override
+                public void run() {
+                    File file = new File(Environment.getExternalStorageDirectory(), "MosquitoGo");
+                    Log.d("Camera", "Creating directory");
+                    if(!file.exists())
+                    {
+                        file.mkdirs();
+                    }
+                    OutputStream os = null;
+                    try {
+                        os = new FileOutputStream(file);
+                        os.write(data);
+                        os.close();
+                    } catch (IOException e) {
+                        Log.w(TAG, "Cannot write to " + file, e);
+                    } finally {
+                        if (os != null) {
+                            try {
+                                os.close();
+                            } catch (IOException e) {
+                                // Ignore
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    };
+
+
+    private Handler getBackgroundHandler() {
+        if (mBackgroundHandler == null) {
+            HandlerThread thread = new HandlerThread("background");
+            thread.start();
+            mBackgroundHandler = new Handler(thread.getLooper());
+        }
+        return mBackgroundHandler;
+    }
+
     public static class ConfirmationDialogFragment extends DialogFragment {
 
         private static final String ARG_MESSAGE = "message";
@@ -211,6 +294,8 @@ public class MainActivity extends AppCompatActivity implements
             fragment.setArguments(args);
             return fragment;
         }
+
+
 
         @NonNull
         @Override
@@ -244,7 +329,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
 
-    }
+    };
 
 
     private class MyLocationListener implements LocationListener {
