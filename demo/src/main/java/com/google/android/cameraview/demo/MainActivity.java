@@ -24,7 +24,12 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -80,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements
     private ImageView arrow;
     private ImageView tire;
     private Button mogo; // stands for mosquitoGo
+    private TextView message;
     double arrowRotationAngle;
     double distance;
     private static final String TAG = "MainActivity";
@@ -91,6 +97,13 @@ public class MainActivity extends AppCompatActivity implements
     private CameraView mCameraView;
 
     private Handler mBackgroundHandler;
+
+    // record the compass picture angle turned
+    private float currentDegree = 0f;
+        // device sensor manager
+
+    private SensorManager mSensorManager;
+
 
     @SuppressLint("MissingPermission")
     @Override
@@ -104,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements
         arrow = (ImageView) findViewById(R.id.arrow);
         tire = (ImageView) findViewById(R.id.tire);
         mogo = (Button) findViewById(R.id.mogo);
-
+        message = (TextView) findViewById(R.id.message);
         if (mogo != null) {
             mogo.setOnClickListener(mOnClickListener);
         }
@@ -132,6 +145,11 @@ public class MainActivity extends AppCompatActivity implements
             mCameraView.addCallback(mCallback);
         }
         mCameraView.start();
+
+        SensorEventListener sensorEventListener = new MySensorListener();
+        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        mSensorManager.registerListener(sensorEventListener,
+                mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_GAME);
 
 
     }
@@ -239,7 +257,7 @@ public class MainActivity extends AppCompatActivity implements
             getBackgroundHandler().post(new Runnable() {
                 @Override
                 public void run() {
-                    File file = new File(Environment.getExternalStorageDirectory(), "MosquitoGo");
+                    File file = new File(Environment.getExternalStorageDirectory(), "icon");
                     Log.d("Camera", "Creating directory");
                     if(!file.exists())
                     {
@@ -354,15 +372,23 @@ public class MainActivity extends AppCompatActivity implements
             // set the current location global so calculations can be made
             ObjectBehavior.currentLoc = loc;
             // should enclose by try/catch
-            distance = (int)ObjectBehavior.CalculateDistance();
-            distanceV.setText("Distance: " + String.valueOf(distance) + " feet");
             arrowRotationAngle = ObjectBehavior.CalculateRotation();
-            arrow.setRotation(270+(int)(arrowRotationAngle));
-            if(distance < 500){
+            distanceV.setText("Distance: " + String.valueOf(distance) + " feet");
+
+            distance = (int)ObjectBehavior.CalculateDistance();
+            if(distance > 40) {
+                tire.setVisibility(View.INVISIBLE);
+                message.setVisibility(View.INVISIBLE);
+            }
+            else if(distance <= 40 && distance >= 12){
                tire.setVisibility(View.VISIBLE);
+               message.setVisibility(View.INVISIBLE);
             }
             else {
-                tire.setVisibility(View.INVISIBLE);
+                message.setVisibility(View.VISIBLE);
+                message.setText("Tire is just around you! Look for it ...");
+                //distanceV.setText("Tire is just around you! Look for it ...");
+                //mogo.setBackgroundColor(Color.TRANSPARENT);
             }
             latitudeV.setText(latitude);
             longitudeV.setText(longitude);
@@ -377,6 +403,22 @@ public class MainActivity extends AppCompatActivity implements
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {}
 
+    }
+
+    private class MySensorListener implements SensorEventListener {
+
+        @Override
+        public void onSensorChanged(SensorEvent event){
+
+            float degree = Math.round(event.values[0]);
+            arrow.setRotation(270+(int)(arrowRotationAngle)-(int)(degree));
+            //distanceV.setText(String.valueOf(arrowRotationAngle) + " " + String.valueOf(degree));
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy){
+            //not in use for now
+        }
     }
 
 }

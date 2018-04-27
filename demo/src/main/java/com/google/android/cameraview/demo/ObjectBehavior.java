@@ -32,8 +32,8 @@ public class ObjectBehavior {
 
     // sets the current target coordinates and returns it as a Location object
     public static Location identifyTarget(){
-        double lat1 = 28.063205;
-        double lon1 = -82.437997;
+        double lat1 = 28.05999936;
+        double lon1 = -82.41508884;
         targetLoc.setLatitude(lat1);
         targetLoc.setLongitude(lon1);
         return targetLoc;
